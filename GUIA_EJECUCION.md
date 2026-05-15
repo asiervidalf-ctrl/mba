@@ -1,62 +1,72 @@
-# Guía de ejecución de pruebas
+# Guía de ejecución
 
-Este documento resume el proceso recomendado para ejecutar una prueba de la simulación Fantasy con managers LLM. La idea es preparar la configuración, lanzar la simulación, generar los informes explicables y abrir la demo interactiva.
+Esta guía describe el proceso recomendado para ejecutar una prueba de la simulación Fantasy con managers LLM y visualizar sus resultados.
 
-## 1. Requisitos previos
+## 1. Preparación del entorno
 
-Antes de ejecutar una prueba, conviene comprobar que existen estos elementos:
+Crear y activar un entorno virtual:
 
-- Entorno Python del proyecto: `mba`.
-- Dataset de jugadores: `data/players_dataset.json`.
-- Configuración de managers: `config/managers.json`.
-- Ollama instalado y ejecutándose si se usan managers LLM.
-- Modelo local disponible, normalmente `mistral:latest`.
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
-Para preparar Mistral en Ollama:
+Instalar dependencias:
+
+```powershell
+pip install -r requirements.txt
+```
+
+Si se desea usar el modo LLM, instalar Ollama y descargar Mistral:
 
 ```powershell
 ollama pull mistral
 ```
 
-Para comprobar que Ollama responde:
+Comprobación básica:
 
 ```powershell
 ollama run mistral:latest "Responde solo OK"
 ```
 
-## 2. Configurar los managers
+## 2. Archivos necesarios
 
-El archivo principal es:
+El repositorio ya incluye los elementos necesarios para ejecutar la práctica:
+
+- `data/players_dataset.json`: dataset procesado de jugadores.
+- `config/managers.json`: configuración de managers.
+- `model/`: modelo de simulación.
+- `demo/`: visualización interactiva.
+- `requirements.txt`: dependencias.
+
+No se incluyen datos crudos del scraper ni salidas completas de simulación, ya que son artefactos generados.
+
+## 3. Configuración de managers
+
+Los managers se definen en:
 
 ```text
 config/managers.json
 ```
 
-Cada manager puede tener:
+Campos principales:
 
 - `name`: nombre del manager.
-- `sport_strategy`: estrategia deportiva, por ejemplo `cracks`, `mejor_forma`, `grandes_clubes`, `equipos_pequenos` o `arriesgado`.
-- `economic_strategy`: estrategia económica, por ejemplo `balanceado`, `tacano` o `fichar_a_toda_costa`.
-- `decision_engine`: `llm` para usar Mistral/Ollama o `rules` para usar reglas deterministas.
+- `sport_strategy`: estrategia deportiva.
+- `economic_strategy`: estrategia económica.
+- `decision_engine`: `llm` o `rules`.
 - `llm_backend`: normalmente `ollama`.
 - `llm_model`: normalmente `mistral:latest`.
-- `llm_controls`: controles delegados al LLM. En el estado actual se usan decisiones de mercado y alineación.
-- `cash` o `budget`: dinero disponible o presupuesto inicial.
-- `squad_player_ids`: plantilla inicial, con IDs o nombres.
-- `lineup_player_ids`: once inicial, con IDs o nombres.
-- `current_points`: puntos iniciales si se activa su uso desde configuración.
+- `cash` o `budget`: caja disponible o presupuesto base.
+- `squad_player_ids`: plantilla inicial.
+- `lineup_player_ids`: once inicial.
+- `current_points`: puntos iniciales si se activa su lectura.
 
-Si se lanza la simulación con `--managers 5`, solo se usan los primeros 5 managers del archivo.
+Si se ejecuta con `--managers 5`, se usan los primeros 5 managers del archivo.
 
-## 3. Configurar puntos iniciales
+## 4. Puntos iniciales
 
-Los puntos iniciales se controlan en:
-
-```text
-personal_lineup.py
-```
-
-Valores importantes:
+Los puntos de inicio se configuran en `personal_lineup.py`:
 
 ```python
 DEFAULT_INITIAL_POINTS = 0
@@ -66,234 +76,164 @@ USE_INITIAL_POINTS_FROM_MANAGER_CONFIG = False
 
 Opciones habituales:
 
-- Todos empiezan a 0:
+- Todos los managers comienzan con 0 puntos:
 
 ```python
 DEFAULT_INITIAL_POINTS = 0
 INITIAL_POINTS_BY_MANAGER = {}
-USE_INITIAL_POINTS_FROM_MANAGER_CONFIG = False
 ```
 
-- Un manager empieza en desventaja:
+- Un manager comienza con ventaja o desventaja:
 
 ```python
-DEFAULT_INITIAL_POINTS = 0
 INITIAL_POINTS_BY_MANAGER = {"Manager 4": -80}
-USE_INITIAL_POINTS_FROM_MANAGER_CONFIG = False
 ```
 
-- Usar los `current_points` escritos en `config/managers.json`:
+- Los puntos iniciales se leen desde `config/managers.json`:
 
 ```python
 USE_INITIAL_POINTS_FROM_MANAGER_CONFIG = True
 ```
 
-## 4. Configurar jornadas
+## 5. Parámetros de simulación
 
-La simulación se lanza desde:
+La entrada principal es:
 
 ```text
 model/model_run_fantasy.py
 ```
 
-Parámetros principales:
+Parámetros más relevantes:
 
 - `--start-round`: jornada inicial.
 - `--end-round`: última jornada incluida.
-- `--rounds`: número de jornadas a ejecutar si no se usa `--end-round`.
-- `--days-per-round`: días de mercado por jornada. Por defecto son 7.
+- `--rounds`: número de jornadas si no se usa `--end-round`.
+- `--days-per-round`: días de mercado por jornada.
 - `--managers`: número de managers.
 - `--budget`: presupuesto base.
-- `--seed`: semilla aleatoria. Si se indica, ayuda a reproducir pruebas.
+- `--seed`: semilla aleatoria para reproducibilidad.
 - `--resume`: reanuda desde `data/simulation_results/current_state.json`.
-- `--manager-config`: permite usar otro archivo de managers.
-- `--state-file`: permite usar otro archivo de estado.
-- `--llm-log-level`: nivel de logs en consola: `DEBUG`, `INFO`, `WARNING` o `ERROR`.
+- `--llm-log-level`: nivel de logs.
 
-Ejemplo para ejecutar de la jornada 33 a la 38 con 5 managers:
+Ejemplo de ejecución entre las jornadas 33 y 38:
 
 ```powershell
-.\mba\Scripts\python.exe model\model_run_fantasy.py --start-round 33 --end-round 38 --managers 5
+python model\model_run_fantasy.py --start-round 33 --end-round 38 --managers 5
 ```
 
-Ejemplo para ejecutar solo dos jornadas desde la jornada 30:
+Ejemplo de ejecución corta de dos jornadas:
 
 ```powershell
-.\mba\Scripts\python.exe model\model_run_fantasy.py --start-round 30 --rounds 2 --managers 5
+python model\model_run_fantasy.py --start-round 30 --rounds 2 --managers 5
 ```
 
-## 5. Configurar comportamiento del LLM
+## 6. Variables del LLM
 
-El proyecto usa variables de entorno para ajustar Ollama/Mistral sin tocar código.
+El comportamiento del LLM se ajusta con variables de entorno:
 
-Variables principales:
+- `MBA_LLM_BACKEND`: backend. Por defecto, `ollama`.
+- `MBA_LLM_MODEL`: modelo. Por defecto, `mistral:latest`.
+- `MBA_LLM_TIMEOUT_SECONDS`: timeout por llamada.
+- `MBA_OLLAMA_NUM_CTX`: tamaño de contexto.
+- `MBA_OLLAMA_NUM_PREDICT`: máximo de tokens generados.
+- `MBA_LLM_MARKET_DAYS_PER_ROUND`: días de mercado con consulta LLM.
+- `MBA_LLM_LINEUP_START_ROUND`: jornada desde la que el LLM decide alineaciones.
 
-- `MBA_LLM_BACKEND`: backend LLM. Por defecto `ollama`.
-- `MBA_LLM_MODEL`: modelo LLM. Por defecto `mistral:latest`.
-- `MBA_OLLAMA_BASE_URL`: URL de Ollama. Por defecto `http://127.0.0.1:11434`.
-- `MBA_LLM_TIMEOUT_SECONDS`: timeout de cada llamada. Por defecto `120`.
-- `MBA_OLLAMA_NUM_CTX`: ventana de contexto. Por defecto `2048`.
-- `MBA_OLLAMA_NUM_PREDICT`: máximo de tokens generados. Por defecto `700`.
-- `MBA_OLLAMA_USE_JSON_SCHEMA`: activa schema JSON. Por defecto `1`.
-- `MBA_LLM_LOG_PROMPTS`: si vale `1`, guarda/expone prompts con más detalle.
-- `MBA_LLM_MARKET_DAYS_PER_ROUND`: cuántos días de mercado consulta al LLM.
-- `MBA_LLM_LINEUP_START_ROUND`: desde qué jornada se consulta al LLM para alineaciones.
-
-Modo actual recomendado, con decisiones de mercado todos los días:
+Configuración recomendada para decisiones LLM todos los días de mercado:
 
 ```powershell
-$env:MBA_LLM_MARKET_DAYS_PER_ROUND="7"
 $env:MBA_LLM_TIMEOUT_SECONDS="180"
+$env:MBA_LLM_MARKET_DAYS_PER_ROUND="7"
 ```
 
-Modo rápido y más barato, con LLM solo el día 1 de mercado:
+Configuración más rápida, con LLM solo en el primer día de mercado:
 
 ```powershell
 $env:MBA_LLM_MARKET_DAYS_PER_ROUND="1"
 ```
 
-Forzar ejecución sin LLM, usando reglas deterministas:
+## 7. Limpieza antes de una prueba
+
+Para iniciar una prueba desde cero se debe borrar la carpeta de resultados generados:
 
 ```powershell
-$env:MBA_FORCE_RULES="1"
+Remove-Item -Recurse -Force data\simulation_results
 ```
 
-## 6. Limpiar resultados anteriores
+La carpeta se volverá a crear automáticamente al ejecutar la simulación.
 
-Si se quiere una prueba desde cero, hay que eliminar el contenido de:
+## 8. Ejecución recomendada
 
-```text
-data/simulation_results/
-```
-
-No borres la carpeta, solo sus archivos internos. Desde PowerShell:
-
-```powershell
-Get-ChildItem .\data\simulation_results -Force | Remove-Item -Recurse -Force
-```
-
-Esto evita mezclar resultados nuevos con ejecuciones antiguas.
-
-## 7. Ejecutar la simulación
-
-Una ejecución completa recomendada podría ser:
+Una ejecución completa puede realizarse con:
 
 ```powershell
 $env:MBA_LLM_TIMEOUT_SECONDS="180"
 $env:MBA_LLM_MARKET_DAYS_PER_ROUND="7"
-.\mba\Scripts\python.exe model\model_run_fantasy.py --start-round 33 --end-round 38 --managers 5
+python model\model_run_fantasy.py --start-round 33 --end-round 38 --managers 5
 ```
 
-Durante la ejecución se imprimen logs de Mistral/Ollama indicando:
+Durante la ejecución se muestran logs de consulta al LLM, tiempos de respuesta y validez del JSON recibido.
 
-- Manager consultado.
-- Tipo de payload.
-- Tiempo de respuesta.
-- Si el JSON fue válido.
+## 9. Resultados generados
 
-Si aparecen errores, timeouts o fallbacks, quedarán reflejados después en `llm_decisions.json`.
+La simulación genera `data/simulation_results/`. Los archivos más relevantes son:
 
-## 8. Outputs generados
+- `current_state.json`: estado final.
+- `leaderboard.json`: clasificación.
+- `lineups_history.json`: plantillas y alineaciones.
+- `market_days.json`: mercados diarios.
+- `llm_decisions.json`: decisiones del LLM y validación.
+- `llm_decisions_explained.md`: informe explicable en lenguaje natural.
 
-La simulación escribe los resultados en:
+Para generar el informe explicable:
+
+```powershell
+python explain_llm_decisions.py
+```
+
+Para actualizar la demo con los resultados más recientes:
+
+```powershell
+python build_interactive_demo.py
+```
+
+## 10. Visualización
+
+La demo está en:
 
 ```text
-data/simulation_results/
+demo/index.html
 ```
 
-Archivos principales:
-
-- `current_state.json`: estado completo final de la liga.
-- `leaderboard.json`: clasificación final.
-- `agents.csv`: evolución por manager y jornada.
-- `rounds.csv`: resumen por jornada.
-- `lineups_history.json`: alineaciones, banquillos y plantillas por jornada.
-- `market_days.json`: mercados diarios, ventas, compras y pujas.
-- `market_auctions.json`: historial de subastas.
-- `market_bonuses.json`: bonus económicos por jornada.
-- `strategy_summary.json`: resumen de estrategias.
-- `llm_decisions.json`: decisiones LLM, prompts, payloads, respuestas, parseo y decisión final aplicada.
-- `llm_decisions_explained.md`: explicación en lenguaje natural de las decisiones LLM.
-
-## 9. Generar explicabilidad y demo
-
-Después de ejecutar una simulación, genera el informe explicable:
+Se recomienda abrirla mediante un servidor local:
 
 ```powershell
-.\mba\Scripts\python.exe explain_llm_decisions.py
+python -m http.server 8090 --bind 127.0.0.1
 ```
 
-Y actualiza los datos embebidos de la demo:
-
-```powershell
-.\mba\Scripts\python.exe build_interactive_demo.py
-```
-
-Esto actualiza:
-
-```text
-data/simulation_results/llm_decisions_explained.md
-demo/demo_data.js
-```
-
-## 10. Abrir la demo interactiva
-
-Para abrir la demo, levanta un servidor local desde la raíz del proyecto:
-
-```powershell
-.\mba\Scripts\python.exe -m http.server 8090 --bind 127.0.0.1
-```
-
-Después abre en el navegador:
+URL:
 
 ```text
 http://127.0.0.1:8090/demo/index.html
 ```
 
-La demo permite consultar:
+La visualización permite consultar clasificación, plantillas, onces, mercado, evolución de jugadores y decisiones LLM por jornada.
 
-- Clasificación y puntos acumulados.
-- Estrategias de cada manager.
-- Evolución de plantilla y once sobre campo de fútbol.
-- Mercados diarios.
-- Valor y puntos de jugadores.
-- Decisiones LLM por jornada, con resumen, factores, riesgos, traza, propuesta original y decisión final aplicada.
+## 11. Comprobación rápida
 
-## 11. Diagnóstico rápido tras una prueba
-
-Para comprobar si hubo fallbacks o respuestas no parseables:
+Para revisar si hubo errores o fallbacks en las decisiones LLM:
 
 ```powershell
-.\mba\Scripts\python.exe -c "import json; d=json.load(open('data/simulation_results/llm_decisions.json',encoding='utf-8-sig')); logs=[x for m in d for x in m.get('llm_decision_history',[])]; print('logs',len(logs),'parsed',sum(1 for x in logs if (x.get('llm_request') or {}).get('parsed_output')),'fallback',sum(1 for x in logs if x.get('fallback_used')),'errors',sum(1 for x in logs if (x.get('llm_request') or {}).get('error')))"
+python -c "import json; d=json.load(open('data/simulation_results/llm_decisions.json',encoding='utf-8-sig')); logs=[x for m in d for x in m.get('llm_decision_history',[])]; print('logs',len(logs),'fallbacks',sum(1 for x in logs if x.get('fallback_used')),'errores',sum(1 for x in logs if (x.get('llm_request') or {}).get('error')))"
 ```
 
-El objetivo de una ejecución limpia es:
+Una ejecución correcta debería tener:
 
 ```text
-fallback = 0
-errors = 0
+fallbacks = 0
+errores = 0
 ```
 
-## 12. Reanudar una simulación
+## 12. Demo incluida
 
-Si ya existe `current_state.json`, se puede continuar desde la siguiente jornada con:
-
-```powershell
-.\mba\Scripts\python.exe model\model_run_fantasy.py --resume --end-round 38 --managers 5
-```
-
-En modo `--resume`, el modelo toma la jornada actual desde el estado guardado. Si el estado dice que la próxima jornada es la 36 y se indica `--end-round 38`, ejecutará 36, 37 y 38.
-
-## 13. Recomendaciones de entrega
-
-Para una prueba final entregable:
-
-1. Configura managers en `config/managers.json`.
-2. Ajusta puntos iniciales en `personal_lineup.py` si hace falta.
-3. Limpia `data/simulation_results/`.
-4. Ejecuta la simulación con `--start-round`, `--end-round` y `--managers`.
-5. Genera `llm_decisions_explained.md`.
-6. Genera `demo/demo_data.js`.
-7. Abre la demo con servidor local.
-8. Comprueba que `llm_decisions.json` no tiene fallbacks ni errores.
-
+El repositorio incluye `demo/demo_data.js`, generado a partir de una ejecución previa. Esto permite revisar la visualización sin relanzar una simulación.
