@@ -1,0 +1,23 @@
+# Entornos virtuales
+mba/
+.venv/
+venv/
+
+# Cachés de Python
+__pycache__/
+*.py[cod]
+
+# Salidas generadas por simulaciones
+data/simulation_results/
+
+# Datos crudos del scraper
+data/fantasy_raw/
+
+# Artefactos locales
+*.zip
+*.log
+.env
+
+# Notebooks/IDE
+.idea/
+.vscode/

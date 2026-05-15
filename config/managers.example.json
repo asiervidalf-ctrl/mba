@@ -1,0 +1,25 @@
+﻿{
+  "_help": [
+    "Si defines squad_player_ids, esos jugadores se asignan al manager al empezar.",
+    "cash representa el dinero restante actual; budget representa presupuesto antes de comprar la plantilla.",
+    "lineup_player_ids es opcional y solo se usa en la primera jornada simulada.",
+    "preferred_formation es opcional y solo se usa si no hay lineup_player_ids vÃ¡lida."
+  ],
+  "managers": [
+    {
+      "name": "Mi Manager",
+      "sport_strategy": "cracks",
+      "economic_strategy": "fichar_a_toda_costa",
+      "decision_engine": "llm",
+      "llm_backend": "ollama",
+      "llm_model": "mistral:latest",
+      "llm_controls": ["sale_candidates", "market_bid", "formation"],
+      "cash": 12500000,
+      "current_points": 1342,
+      "preferred_formation": "3-4-3",
+      "squad_player_ids": [137, 188],
+      "lineup_player_ids": [137]
+    }
+  ]
+}
+

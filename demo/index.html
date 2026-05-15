@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo interactiva Fantasy LLM</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Simulacion Fantasy con agentes LLM</p>
+        <h1>Evolucion de managers, plantillas y mercado</h1>
+      </div>
+      <div class="header-actions">
+        <select id="managerSelect" aria-label="Manager"></select>
+        <select id="roundSelect" aria-label="Jornada"></select>
+      </div>
+    </header>
+
+    <main>
+      <section class="metrics-grid" id="metricsGrid"></section>
+
+      <section class="layout two-columns">
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Clasificacion</p>
+              <h2>Puntos acumulados</h2>
+            </div>
+          </div>
+          <canvas id="pointsChart" height="260"></canvas>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Estrategias</p>
+              <h2>Perfil de cada manager</h2>
+            </div>
+          </div>
+          <div id="strategyCards" class="strategy-grid"></div>
+        </article>
+      </section>
+
+      <section class="layout two-columns wide-left">
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Plantillas</p>
+              <h2>Evolucion por jornada</h2>
+            </div>
+            <div class="segmented" role="group" aria-label="Vista de plantilla">
+              <button class="segment active" data-squad-mode="squad">Plantilla</button>
+              <button class="segment" data-squad-mode="lineup">Once</button>
+            </div>
+          </div>
+          <div id="squadTimeline" class="timeline"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Jugador</p>
+              <h2>Valor y puntos</h2>
+            </div>
+            <select id="playerSelect" aria-label="Jugador"></select>
+          </div>
+          <canvas id="playerChart" height="250"></canvas>
+          <div id="playerSummary" class="compact-list"></div>
+        </article>
+      </section>
+
+      <section class="layout two-columns">
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Mercado</p>
+              <h2>Subastas y operaciones</h2>
+            </div>
+            <select id="marketDaySelect" aria-label="Dia de mercado"></select>
+          </div>
+          <div id="marketBoard" class="market-board"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">LLM</p>
+              <h2>Decisiones explicables</h2>
+            </div>
+          </div>
+          <div class="decision-controls">
+            <label for="decisionRoundSelect">Jornada</label>
+            <select id="decisionRoundSelect" aria-label="Jornada de decisiones"></select>
+            <span id="decisionRoundLabel">Sin decisiones</span>
+          </div>
+          <div id="decisionFeed" class="decision-feed"></div>
+        </article>
+      </section>
+    </main>
+
+    <template id="emptyTemplate">
+      <div class="empty">No hay datos para esta seleccion.</div>
+    </template>
+
+    <script src="demo_data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
