@@ -3,7 +3,7 @@
     "Si defines squad_player_ids, esos jugadores se asignan al manager al empezar.",
     "cash representa el dinero restante actual; budget representa presupuesto antes de comprar la plantilla.",
     "lineup_player_ids es opcional y solo se usa en la primera jornada simulada.",
-    "preferred_formation es opcional y solo se usa si no hay lineup_player_ids vÃ¡lida."
+    "preferred_formation es opcional y solo se usa si no hay lineup_player_ids válida."
   ],
   "managers": [
     {
